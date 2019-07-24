@@ -8,6 +8,10 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorSupplier;
+import org.apache.kafka.streams.state.KeyValueBytesStoreSupplier;
+import org.apache.kafka.streams.state.KeyValueStore;
+import org.apache.kafka.streams.state.StoreBuilder;
+import org.apache.kafka.streams.state.Stores;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -34,9 +38,17 @@ public class KafkaStreamProcessorapiApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         Topology topology = new Topology();
-        Topology sourceTopology = topology.addSource("source", Serdes.String().deserializer(), new PersonDeserializer(), "topology-topic");
-        Topology upperProcessor = sourceTopology.addProcessor("upper", () -> new PersonUpperProcessor(), "source");
-        upperProcessor.addProcessor("peek", () -> new PeekProcessor(), "upper");
+
+        KeyValueBytesStoreSupplier storeSupplier = Stores.inMemoryKeyValueStore("tuhucon");
+        StoreBuilder<KeyValueStore<String, Long>> storeBuilder = Stores.keyValueStoreBuilder(storeSupplier, Serdes.String(), Serdes.Long());
+
+
+        topology
+                .addSource("source", Serdes.String().deserializer(), new PersonDeserializer(), "topology-topic")
+                .addProcessor("upper", () -> new PersonUpperProcessor("tuhucon"), "source")
+                .addProcessor("peek", () -> new PeekProcessor("tuhucon"), "upper");
+
+        topology.addStateStore(storeBuilder, "upper", "peek");
 
         Properties properties = new Properties();
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "topology");
