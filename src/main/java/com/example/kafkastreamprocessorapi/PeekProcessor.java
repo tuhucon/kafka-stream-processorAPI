@@ -4,7 +4,7 @@ import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
 
-public class PeekProcessor implements Processor<String, Person> {
+public class PeekProcessor implements Processor<String, Long> {
     ProcessorContext context;
     String storeName;
     KeyValueStore<String, Long> store;
@@ -20,16 +20,8 @@ public class PeekProcessor implements Processor<String, Person> {
     }
 
     @Override
-    public void process(String key, Person value) {
-        String storeKey = value.getId().toString();
-        Long current = store.get(storeKey);
-        if (current == null) {
-            current = 1L;
-        } else {
-            current++;
-        }
-        store.put(storeKey, current);
-        System.out.println(value + " is meet " + current + " times");
+    public void process(String key, Long value) {
+        System.out.println(String.format("%s: %d", key, value));
     }
 
     @Override

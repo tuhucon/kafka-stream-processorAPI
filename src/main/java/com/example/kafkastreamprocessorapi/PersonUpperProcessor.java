@@ -1,9 +1,12 @@
 package com.example.kafkastreamprocessorapi;
 
-import org.apache.kafka.streams.processor.AbstractProcessor;
-import org.apache.kafka.streams.processor.Processor;
-import org.apache.kafka.streams.processor.ProcessorContext;
+import org.apache.kafka.streams.KeyValue;
+import org.apache.kafka.streams.processor.*;
+import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PersonUpperProcessor implements Processor<String, Person> {
     ProcessorContext context;
@@ -18,6 +21,15 @@ public class PersonUpperProcessor implements Processor<String, Person> {
     public void init(ProcessorContext context) {
         this.context = context;
         this.store = (KeyValueStore<String, Long>)context.getStateStore(storeName);
+        context.schedule(10_000L, PunctuationType.WALL_CLOCK_TIME, timestamp -> {
+            KeyValueIterator<String, Long> iterator = store.range("needForward_", "needForward_z");
+            List<KeyValue<String, Long>> xxx = new ArrayList<>();
+            iterator.forEachRemaining(xxx::add);
+            xxx.forEach(r -> {
+                context.forward(r.key, r.value);
+                store.delete(r.key);
+            });
+        });
     }
 
     @Override
@@ -26,11 +38,12 @@ public class PersonUpperProcessor implements Processor<String, Person> {
         String storeKey = value.getId().toString();
         Long current = store.get(storeKey);
         if (current == null) {
-            store.put(storeKey, 1L);
+            current = 1L;
         } else {
-            store.put(storeKey, current + 1L);
+            current++;
         }
-        context.forward(key, value);
+        store.put(storeKey, current);
+        store.put("needForward_" + storeKey, current);
     }
 
     @Override
