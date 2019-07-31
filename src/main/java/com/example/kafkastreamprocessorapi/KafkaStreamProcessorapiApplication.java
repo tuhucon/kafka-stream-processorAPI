@@ -42,17 +42,18 @@ public class KafkaStreamProcessorapiApplication implements CommandLineRunner {
         KeyValueBytesStoreSupplier storeSupplier = Stores.inMemoryKeyValueStore("tuhucon");
         StoreBuilder<KeyValueStore<String, Long>> storeBuilder = Stores.keyValueStoreBuilder(storeSupplier, Serdes.String(), Serdes.Long());
 
-
         topology
                 .addSource("source", Serdes.String().deserializer(), new PersonDeserializer(), "topology-topic")
                 .addProcessor("upper", () -> new PersonUpperProcessor("tuhucon"), "source")
                 .addProcessor("peek", () -> new PeekProcessor("tuhucon"), "upper");
+
 
         topology.addStateStore(storeBuilder, "upper", "peek");
 
         Properties properties = new Properties();
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "topology");
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        properties.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, 3);
 
 
         System.out.println(topology.describe());
