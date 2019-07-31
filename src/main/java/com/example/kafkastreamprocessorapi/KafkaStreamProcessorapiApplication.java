@@ -66,6 +66,11 @@ public class KafkaStreamProcessorapiApplication implements CommandLineRunner {
             System.out.println("old State: " + oldState);
             System.out.println("new State: " + newState);
         }));
+
+        kafkaStreams.setUncaughtExceptionHandler((t, e) -> {
+            System.out.println(t.getId() + " : " + e.getMessage());
+        });
+
         kafkaStreams.start();
     }
 }

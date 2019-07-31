@@ -34,16 +34,18 @@ public class PersonUpperProcessor implements Processor<String, Person> {
 
     @Override
     public void process(String key, Person value) {
-        value.setName(value.getName().toUpperCase());
-        String storeKey = value.getId().toString();
-        Long current = store.get(storeKey);
-        if (current == null) {
-            current = 1L;
-        } else {
-            current++;
-        }
-        store.put(storeKey, current);
-        store.put("needForward_" + storeKey, current);
+
+        throw new RuntimeException("tu hu con");
+//        value.setName(value.getName().toUpperCase());
+//        String storeKey = value.getId().toString();
+//        Long current = store.get(storeKey);
+//        if (current == null) {
+//            current = 1L;
+//        } else {
+//            current++;
+//        }
+//        store.put(storeKey, current);
+//        store.put("needForward_" + storeKey, current);
     }
 
     @Override
