@@ -1,5 +1,6 @@
 package com.example.kafkastreamprocessorapi;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.Serdes;
@@ -54,6 +55,9 @@ public class KafkaStreamProcessorapiApplication implements CommandLineRunner {
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "topology");
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, 3);
+
+        properties.put(StreamsConfig.consumerPrefix(ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG),
+                "com.example.kafkastreamprocessorapi.ConsumerInterceptor");
 
 
         System.out.println(topology.describe());
