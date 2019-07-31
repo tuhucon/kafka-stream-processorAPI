@@ -62,6 +62,10 @@ public class KafkaStreamProcessorapiApplication implements CommandLineRunner {
 
         System.out.println(topology.describe());
         KafkaStreams kafkaStreams = new KafkaStreams(topology, properties);
+        kafkaStreams.setStateListener(((newState, oldState) -> {
+            System.out.println("old State: " + oldState);
+            System.out.println("new State: " + newState);
+        }));
         kafkaStreams.start();
     }
 }
